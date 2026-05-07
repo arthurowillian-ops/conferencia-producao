@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SGC v12.0 - Brasil ao Cubo</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -29,10 +30,10 @@
         table { width: 100%; border-collapse: collapse; }
         th { background: #f8f9fa; padding: 15px; text-align: left; font-size: 12px; color: #888; }
         td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
-        .check-row { display: grid; grid-template-columns: 1fr 120px 50px; background: white; border-radius: 15px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+        .check-row { display: grid; grid-template-columns: 1fr 120px 50px; background: white; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); overflow: hidden; }
         .c-posto { grid-column: 1 / span 3; padding: 10px 15px; font-weight: 700; font-size: 10px; background: #fafafa; border-left: 10px solid var(--green); text-transform: uppercase; }
         .lp-style { border-left-color: var(--blue); }
-        .c-ativid { padding: 15px; font-size: 14px; font-weight: 500; }
+        .c-ativid { padding: 15px; font-size: 14px; }
         .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); z-index: 1000; }
         button { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; }
         input[type="checkbox"] { width: 32px; height: 32px; accent-color: var(--primary); }
@@ -45,7 +46,7 @@
     <div id="scr-login" class="screen active">
         <div class="card-auth">
             <img src="https://i.postimg.cc/sfJg4Ykr/br3-imagem.png" class="logo-login">
-            <div style="font-weight:700; margin-bottom:20px;">SISTEMA DE CONFERÊNCIA ONLINE</div>
+            <div style="font-weight:700; margin-bottom:20px;">SISTEMA CONFERÊNCIA ONLINE</div>
             <button style="width:100%" onclick="show('scr-start')">ENTRAR</button>
         </div>
     </div>
@@ -63,22 +64,14 @@
 
     <div id="scr-list" class="screen">
         <div class="container">
-            <div class="header-app">
-                <h2 id="list-title" style="margin:0">Unidades</h2>
-                <button onclick="show('scr-start')" style="background:#eee; color:#333">Voltar</button>
-            </div>
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>ID Projeto</th><th>Cód. Express</th><th>OP</th><th>Ação</th></tr></thead>
-                    <tbody id="body-units"></tbody>
-                </table>
-            </div>
+            <div class="header-app"><h2 id="list-title" style="margin:0">Unidades</h2><button onclick="show('scr-start')" style="background:#eee; color:#333">Voltar</button></div>
+            <div class="table-card"><table><thead><tr><th>Projeto</th><th>Express</th><th>OP</th><th>Ação</th></tr></thead><tbody id="body-units"></tbody></table></div>
         </div>
     </div>
 
     <div id="scr-check" class="screen">
         <div class="container" style="margin-bottom: 260px;">
-            <div id="info-header" style="background: var(--dark); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-around; font-size: 12px; text-align: center;"></div>
+            <div id="info-header" style="background: var(--dark); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-around; font-size: 12px;"></div>
             <div id="items-container"></div>
         </div>
         <div class="action-bar">
@@ -96,7 +89,7 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU FIREBASE
+        // CONFIGURAÇÃO DO FIREBASE (Suas credenciais)
         const firebaseConfig = {
             apiKey: "AIzaSyCuI-JSXWNzLCscFowXYZVRHsSN95Z_LEU",
             authDomain: "sistema-conferencia-24505.firebaseapp.com",
@@ -110,11 +103,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Listas de Unidades do seu arquivo
         const dbM = [["7.00.SGC0018","EXPRESS 291","006307"],["7.00.0000015","EXPRESS 292","006306"],["7.00.SGC0017","EXPRESS 293","006308"],["7.00.0000014","EXPRESS 294","006309"],["7.00.SGC0016","EXPRESS 295","006310"]];
         const dbP = [["POD 11","7.00.SGC0018","EXPRESS 291","006307"],["POD 10","7.00.SGC0017","EXPRESS 293","006308"]];
         
-        const tM = [{p:"CORTE PILARES", a:"DATA INÍCIO", d:1}, {p:"CORTE PILARES", a:"CONCLUÍDO", c:1}, {p:"SL 02", a:"MONTAGEM PILARES", c:1}, {p:"LP 01", a:"ELÉTRICA", c:1, t:'lp'}];
-        const tP = [{p:"CORTE", a:"DATA INÍCIO", d:1}, {p:"SL 02", a:"MONTAGEM METALON", c:1}];
+        const tM = [{p:"CORTE PILARES", a:"DATA INÍCIO", d:1}, {p:"CORTE PILARES", a:"CONCLUÍDO", c:1}, {p:"SL 02", a:"MONTAGEM PILARES", c:1}, {p:"LP 10", a:"DATA FINALIZAÇÃO", d:1, t:'lp'}];
+        const tP = [{p:"CORTE", a:"DATA INÍCIO", d:1}, {p:"SL 08", a:"LOUÇAS E METAIS", c:1}];
 
         let cur = {};
 
@@ -132,11 +126,57 @@
                 const id = type === 'MODULO' ? u[0] : u[1];
                 const exp = type === 'MODULO' ? u[1] : u[2];
                 const op = type === 'MODULO' ? u[2] : u[3];
-                body.innerHTML += `<tr><td>${id}</td><td>${exp}</td><td>${op}</td><td><button onclick="openCheckOnline('${id}','${exp}','${op}','${type}')" style="padding:5px 10px; font-size:12px">Abrir</button></td></tr>`;
+                body.innerHTML += `<tr><td>${id}</td><td>${exp}</td><td>${op}</td><td><button onclick="openCheckOnline('${id}','${exp}','${op}','${type}')">Abrir</button></td></tr>`;
             });
             show('scr-list');
         }
 
         async function openCheckOnline(id, exp, op, type) {
             cur = { id, exp, op, type, path: exp.replace(/\./g, '_') };
-            document.
+            document.getElementById('info-header').innerHTML = `ID: ${id} | EXP: ${exp} | OP: ${op}`;
+            
+            // Busca no Firebase
+            const snapshot = await db.ref('conferencias/' + cur.path).once('value');
+            const saved = snapshot.val() || {};
+
+            const cont = document.getElementById('items-container');
+            cont.innerHTML = "";
+            const tasks = (type === 'MODULO') ? tM : tP;
+
+            tasks.forEach((t, i) => {
+                cont.innerHTML += `
+                <div class="check-row">
+                    <div class="c-posto ${t.t?'lp-style':''}">${t.p}</div>
+                    <div class="c-ativid">${t.a}</div>
+                    <div class="c-input">${t.d ? `<input type="date" class="d-in" data-idx="${i}" value="${saved['d_'+i]||''}" onchange="saveOnline()">` : ''}</div>
+                    <div class="c-input">${t.c ? `<input type="checkbox" class="c-in" data-idx="${i}" ${saved['c_'+i]?'checked':''} onclick="saveOnline()">` : ''}</div>
+                </div>`;
+            });
+            document.getElementById('obs-main').value = saved.obs || "";
+            updateProgress();
+            show('scr-check');
+        }
+
+        function saveOnline() {
+            const data = { obs: document.getElementById('obs-main').value, lastUpdate: Date.now() };
+            document.querySelectorAll('.d-in').forEach(el => data['d_'+el.dataset.idx] = el.value);
+            document.querySelectorAll('.c-in').forEach(el => data['c_'+el.dataset.idx] = el.checked);
+            
+            // Grava no Firebase
+            db.ref('conferencias/' + cur.path).update(data);
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = document.querySelectorAll('.c-in').length;
+            const checked = document.querySelectorAll('.c-in:checked').length;
+            const p = total > 0 ? Math.round((checked/total)*100) : 0;
+            document.getElementById('bar-fill').style.width = p + "%";
+            document.getElementById('pct-txt').innerText = p + "%";
+        }
+
+        function doPDF() { window.print(); }
+        function doExcel() { alert("Excel gerado (Simulação)"); }
+    </script>
+</body>
+</html>
