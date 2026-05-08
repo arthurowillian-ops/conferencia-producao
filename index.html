@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SGC v12.1 - Brasil ao Cubo (Online)</title>
+    <title>SGC v12.2 - Blindado</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -23,24 +23,25 @@
 
         .card-auth { background: var(--white); padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 400px; margin-top: 5vh; border: 1px solid #eee; }
         .logo-login { height: 80px; margin-bottom: 20px; }
-        .title-login { font-size: 16px; font-weight: 600; color: #555; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
         
         .grid-selection { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 700px; margin-top: 20px; }
         @media (min-width: 600px) { .grid-selection { grid-template-columns: 1fr 1fr; } }
 
         .card-type { background: var(--white); padding: 30px 20px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid transparent; }
-        .card-type:active { transform: scale(0.98); background: #fafafa; }
-        .card-type h2 { color: var(--dark); margin: 10px 0 0; font-size: 18px; }
-
+        
         .container { width: 100%; max-width: 1100px; }
         .header-app { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; background: var(--white); padding: 12px 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         
+        /* Status de Salvamento */
+        #save-status { font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; text-transform: uppercase; }
+        .status-sync { background: #e8f5e9; color: #2e7d32; }
+        .status-wait { background: #fff3e0; color: #ef6c00; }
+
         .table-card { background: white; border-radius: 16px; overflow-x: auto; width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 11px; color: #888; text-transform: uppercase; }
         td { padding: 10px 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
 
-        .status-cell { font-size: 11px; color: #666; line-height: 1.2; }
         .pct-badge { background: #e0f7fa; color: #00838f; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-right: 5px; }
 
         .check-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
@@ -52,7 +53,7 @@
         }
         .c-posto { grid-column: 1 / span 3; padding: 8px 15px; font-weight: 700; font-size: 10px; background: #fafafa; border-left: 8px solid var(--green); text-transform: uppercase; }
         .lp-style { border-left-color: var(--blue); background: #f4faff; }
-        .c-ativid { padding: 12px 15px; font-size: 13px; font-weight: 500; display: flex; align-items: center; }
+        .c-ativid { padding: 12px 15px; font-size: 13px; font-weight: 500; }
         .c-input { display: flex; align-items: center; justify-content: center; padding: 5px; }
         
         .action-bar {
@@ -75,9 +76,6 @@
         input[type="checkbox"] { width: 30px; height: 30px; accent-color: var(--primary); cursor: pointer; }
         input[type="date"] { padding: 8px; border: 1px solid #ddd; border-radius: 8px; width: 100%; font-size: 12px; }
         textarea { width: 100%; height: 70px; border-radius: 10px; border: 1px solid #ddd; padding: 10px; resize: none; font-size: 13px; }
-
-        #info-header { flex-wrap: wrap; gap: 10px; text-align: center; font-size: 11px; }
-        #info-header div { flex: 1; min-width: 80px; }
     </style>
 </head>
 <body>
@@ -85,8 +83,7 @@
     <div id="scr-login" class="screen active">
         <div class="card-auth">
             <img src="https://i.postimg.cc/sfJg4Ykr/br3-imagem.png" class="logo-login">
-            <div class="title-login">Sistema de Conferência</div>
-            <button style="width:100%; padding: 18px;" onclick="show('scr-start')">ENTRAR</button>
+            <button style="width:100%; padding: 18px;" onclick="show('scr-start')">ENTRAR NO SISTEMA</button>
         </div>
     </div>
 
@@ -96,58 +93,49 @@
             <button class="btn-back" onclick="show('scr-login')">Sair</button>
         </div>
         <div class="grid-selection">
-            <div class="card-type" onclick="loadList('MODULO')">
-                <span style="font-size:30px">🏗️</span>
-                <h2>MÓDULOS</h2>
-            </div>
-            <div class="card-type" onclick="loadList('POD')">
-                <span style="font-size:30px">🚿</span>
-                <h2>PODS</h2>
-            </div>
+            <div class="card-type" onclick="loadList('MODULO')"><h2>🏗️ MÓDULOS</h2></div>
+            <div class="card-type" onclick="loadList('POD')"><h2>🚿 PODS</h2></div>
         </div>
     </div>
 
     <div id="scr-list" class="screen">
         <div class="container">
             <div class="header-app">
-                <h3 id="list-title" style="margin:0; font-size:16px;">Unidades</h3>
+                <h3 id="list-title" style="margin:0;">Unidades</h3>
                 <button class="btn-back" onclick="show('scr-start')">Voltar</button>
             </div>
-            <div class="table-card">
-                <table>
-                    <thead><tr><th>ID Projeto</th><th>Cód. Express</th><th>OP</th><th>Status Atual</th><th>Gestão</th></tr></thead>
-                    <tbody id="body-units"></tbody>
-                </table>
-            </div>
+            <div class="table-card"><table id="table-units"><thead><tr><th>Projeto</th><th>Express</th><th>OP</th><th>Progresso</th><th></th></tr></thead><tbody id="body-units"></tbody></table></div>
         </div>
     </div>
 
     <div id="scr-check" class="screen">
         <div class="container" style="margin-bottom: 250px;">
-            <div id="info-header" style="background: var(--dark); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-around;"></div>
+            <div class="header-app" style="background: var(--dark); color: white;">
+                <div id="info-header" style="font-size: 11px; display: flex; gap: 20px;"></div>
+                <div id="save-status" class="status-sync">☁️ Sincronizado</div>
+            </div>
             <div id="items-container" class="check-container"></div>
         </div>
 
         <div class="action-bar">
-            <div style="width:100%">
-                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:11px; color:#555">
-                    <span>PROGRESSO ONLINE</span><span id="pct-txt">0%</span>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:11px; margin-bottom:5px">
+                    <span>PROGRESSO REAL</span><span id="pct-txt">0%</span>
                 </div>
-                <div style="background:#eee; height:8px; border-radius:4px; margin:5px 0; overflow:hidden">
+                <div style="background:#eee; height:8px; border-radius:4px; overflow:hidden">
                     <div id="bar-fill" style="background:var(--primary); height:100%; width:0%; transition:0.6s"></div>
                 </div>
-                <textarea id="obs-main" placeholder="Observações e pendências..." oninput="saveOnline()"></textarea>
+                <textarea id="obs-main" placeholder="Observações..." oninput="saveOnline()"></textarea>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; width:100%">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                 <button class="btn-excel" onclick="doExcel()">Excel</button>
-                <button onclick="doPDF()">Gerar PDF</button>
-                <button class="btn-back" style="grid-column: span 2; background:#333; color:white" onclick="show('scr-list')">SALVAR E SAIR</button>
+                <button onclick="doPDF()">PDF</button>
+                <button class="btn-back" style="grid-column: span 2; background:#333; color:white" onclick="show('scr-list')">SALVAR E VOLTAR</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCuI-JSXWNzLCscFowXYZVRHsSN95Z_LEU",
             authDomain: "sistema-conferencia-24505.firebaseapp.com",
@@ -160,36 +148,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // LISTA CORRIGIDA DE MODS
         const dbM = [
-            ["7.00.SGC0018","EXPRESS 291","006307"], ["7.00.0000015","EXPRESS 292","006306"],
-            ["7.00.SGC0017","EXPRESS 293","006308"], ["7.00.0000014","EXPRESS 294","006309"],
-            ["7.00.SGC0016","EXPRESS 295","006310"], ["7.00.0000015","EXPRESS 296","006311"],
-            ["7.00.SGC0013","EXPRESS 297","006312"], ["7.00.0000014","EXPRESS 298","006313"],
-            ["7.00.0000018","EXPRESS 299","006314"], ["7.00.0000015","EXPRESS 300","006315"],
-            ["7.00.0000017","EXPRESS 301","006316"], ["7.00.0000014","EXPRESS 302","006317"],
-            ["7.00.0000016","EXPRESS 303","006641"], ["7.00.0000015","EXPRESS 304","006319"],
-            ["7.00.0000013","EXPRESS 305","006320"], ["7.00.0000014","EXPRESS 306","006321"],
-            ["7.00.SGC0018","EXPRESS 307","007064"], ["7.00.0000015","EXPRESS 308","007059"],
-            ["7.00.SGC0017","EXPRESS 309","007066"], ["7.00.0000014","EXPRESS 310","007060"],
-            ["7.00.SGC0016","EXPRESS 311","007067"], ["7.00.0000015","EXPRESS 312","007062"],
-            ["7.00.SGC0013","EXPRESS 313","007068"], ["7.00.0000014","EXPRESS 314","007063"],
-            ["7.00.0000018","EXPRESS 315","007294"], ["7.00.0000015","EXPRESS 316","007290"],
-            ["7.00.0000017","EXPRESS 317","007295"], ["7.00.0000014","EXPRESS 318","007291"],
-            ["7.00.0000016","EXPRESS 319","007296"], ["7.00.0000015","EXPRESS 320","007292"],
-            ["7.00.0000013","EXPRESS 321","007297"], ["7.00.0000014","EXPRESS 322","007293"]
+            ["7.00.SGC0018","EXPRESS 291","006307"],["7.00.0000015","EXPRESS 292","006306"],["7.00.SGC0017","EXPRESS 293","006308"],["7.00.0000014","EXPRESS 294","006309"],["7.00.SGC0016","EXPRESS 295","006310"],["7.00.0000015","EXPRESS 296","006311"],["7.00.SGC0013","EXPRESS 297","006312"],["7.00.0000014","EXPRESS 298","006313"],["7.00.0000018","EXPRESS 299","006314"],["7.00.0000015","EXPRESS 300","006315"],["7.00.0000017","EXPRESS 301","006316"],["7.00.0000014","EXPRESS 302","006317"],["7.00.0000016","EXPRESS 303","006641"],["7.00.0000015","EXPRESS 304","006319"],["7.00.0000013","EXPRESS 305","006320"],["7.00.0000014","EXPRESS 306","006321"],["7.00.SGC0018","EXPRESS 307","007064"],["7.00.0000015","EXPRESS 308","007059"],["7.00.SGC0017","EXPRESS 309","007066"],["7.00.0000014","EXPRESS 310","007060"],["7.00.SGC0016","EXPRESS 311","007067"],["7.00.0000015","EXPRESS 312","007062"],["7.00.SGC0013","EXPRESS 313","007068"],["7.00.0000014","EXPRESS 314","007063"],["7.00.0000018","EXPRESS 315","007294"],["7.00.0000015","EXPRESS 316","007290"],["7.00.0000017","EXPRESS 317","007295"],["7.00.0000014","EXPRESS 318","007291"],["7.00.0000016","EXPRESS 319","007296"],["7.00.0000015","EXPRESS 320","007292"],["7.00.0000013","EXPRESS 321","007297"],["7.00.0000014","EXPRESS 322","007293"]
         ];
 
-        // LISTA CORRIGIDA DE PODS
         const dbP = [
-            ["7.00.SGC0018","EXPRESS 291","006307"], ["7.00.SGC0017","EXPRESS 293","006308"],
-            ["7.00.SGC0016","EXPRESS 295","006310"], ["7.00.SGC0013","EXPRESS 297","006312"],
-            ["7.00.0000018","EXPRESS 299","006314"], ["7.00.0000017","EXPRESS 301","006316"],
-            ["7.00.0000016","EXPRESS 303","006318"], ["7.00.0000013","EXPRESS 305","006320"],
-            ["7.00.SGC0018","EXPRESS 307","007142"], ["7.00.SGC0017","EXPRESS 309","007143"],
-            ["7.00.SGC0016","EXPRESS 311","007144"], ["7.00.SGC0013","EXPRESS 313","007145"],
-            ["7.00.0000018","EXPRESS 315","007323"], ["7.00.0000017","EXPRESS 317","007324"],
-            ["7.00.0000016","EXPRESS 319","007325"], ["7.00.0000013","EXPRESS 321","007326"]
+            ["7.00.SGC0018","EXPRESS 291","006307"],["7.00.SGC0017","EXPRESS 293","006308"],["7.00.SGC0016","EXPRESS 295","006310"],["7.00.SGC0013","EXPRESS 297","006312"],["7.00.0000018","EXPRESS 299","006314"],["7.00.0000017","EXPRESS 301","006316"],["7.00.0000016","EXPRESS 303","006318"],["7.00.0000013","EXPRESS 305","006320"],["7.00.SGC0018","EXPRESS 307","007142"],["7.00.SGC0017","EXPRESS 309","007143"],["7.00.SGC0016","EXPRESS 311","007144"],["7.00.SGC0013","EXPRESS 313","007145"],["7.00.0000018","EXPRESS 315","007323"],["7.00.0000017","EXPRESS 317","007324"],["7.00.0000016","EXPRESS 319","007325"],["7.00.0000013","EXPRESS 321","007326"]
         ];
 
         const tM = [
@@ -247,6 +211,12 @@
         ];
 
         let cur = {};
+        let isSaving = false;
+
+        // Prevenção de fechamento acidental
+        window.onbeforeunload = function() {
+            if (isSaving) return "Dados ainda estão sendo salvos. Deseja sair?";
+        };
 
         function show(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -256,51 +226,41 @@
 
         async function loadList(type) {
             const body = document.getElementById('body-units');
-            body.innerHTML = "<tr><td colspan='5' style='text-align:center'>Carregando status online...</td></tr>";
+            body.innerHTML = "<tr><td colspan='5' style='text-align:center'>⏳ Conectando ao Google Firebase...</td></tr>";
             const data = (type === 'MODULO') ? dbM : dbP;
             const tasks = (type === 'MODULO') ? tM : tP;
-            document.getElementById('list-title').innerText = type === 'MODULO' ? "Módulos de Produção" : "Pods Hidrossanitários";
             
-            const snapshot = await db.ref('conferencias').once('value');
-            const allSaved = snapshot.val() || {};
-            
-            body.innerHTML = "";
-            data.forEach(u => {
-                const id = u[0];
-                const exp = u[1];
-                const op = u[2];
-                const path = exp.replace(/\./g, '_');
-                const saved = allSaved[path] || {};
+            try {
+                const snapshot = await db.ref('conferencias').once('value');
+                const allSaved = snapshot.val() || {};
+                body.innerHTML = "";
                 
-                let done = 0, total = 0, lastTask = "A iniciar";
-                tasks.forEach((t, i) => {
-                    if(t.c) {
-                        total++;
-                        if(saved['c_'+i]) {
-                            done++;
-                            lastTask = `<b>${t.p}</b> ${t.a}`;
-                        }
-                    }
-                });
-                const p = Math.round((done/total)*100) || 0;
+                data.forEach(u => {
+                    const path = u[1].replace(/\./g, '_');
+                    // Tenta LocalStorage se estiver offline, senão Firebase
+                    const saved = allSaved[path] || JSON.parse(localStorage.getItem(path)) || {};
+                    let done = 0, total = 0;
+                    tasks.forEach((t, i) => { if(t.c) { total++; if(saved['c_'+i]) done++; } });
+                    const p = Math.round((done/total)*100) || 0;
 
-                body.innerHTML += `<tr>
-                    <td><b>${id}</b></td>
-                    <td>${exp}</td>
-                    <td>${op}</td>
-                    <td class="status-cell"><span class="pct-badge">${p}%</span><br><small>${lastTask}</small></td>
-                    <td><button onclick="openCheck('${id}','${exp}','${op}','${type}')">Conferir</button></td>
-                </tr>`;
-            });
+                    body.innerHTML += `<tr>
+                        <td>${u[0]}</td><td>${u[1]}</td><td>${u[2]}</td>
+                        <td><span class="pct-badge">${p}%</span></td>
+                        <td><button onclick="openCheck('${u[0]}','${u[1]}','${u[2]}','${type}')">ABRIR</button></td>
+                    </tr>`;
+                });
+            } catch(e) {
+                body.innerHTML = "<tr><td colspan='5'>Erro ao carregar dados. Verifique sua internet.</td></tr>";
+            }
             show('scr-list');
         }
 
         async function openCheck(id, exp, op, type) {
             cur = { id, exp, op, type, path: exp.replace(/\./g, '_') };
-            document.getElementById('info-header').innerHTML = `<div><small>PROJETO</small><br><b>${id}</b></div><div><small>EXPRESS</small><br><b>${exp}</b></div><div><small>OP</small><br><b>${op}</b></div>`;
+            document.getElementById('info-header').innerHTML = `<b>EXPRESS: ${exp}</b> | <b>OP: ${op}</b>`;
             
             const snapshot = await db.ref('conferencias/' + cur.path).once('value');
-            const saved = snapshot.val() || {};
+            const saved = snapshot.val() || JSON.parse(localStorage.getItem(cur.path)) || {};
 
             const cont = document.getElementById('items-container');
             cont.innerHTML = "";
@@ -320,10 +280,30 @@
         }
 
         function saveOnline() {
+            isSaving = true;
+            const statusEl = document.getElementById('save-status');
+            statusEl.innerText = "⏳ Salvando...";
+            statusEl.className = "status-wait";
+
             const data = { obs: document.getElementById('obs-main').value, lastUpdate: Date.now() };
             document.querySelectorAll('.d-in').forEach(el => data['d_'+el.dataset.idx] = el.value);
             document.querySelectorAll('.c-in').forEach(el => data['c_'+el.dataset.idx] = el.checked);
-            db.ref('conferencias/' + cur.path).update(data);
+            
+            // Backup Local Imediato
+            localStorage.setItem(cur.path, JSON.stringify(data));
+
+            // Envio Firebase com verificação
+            db.ref('conferencias/' + cur.path).update(data)
+                .then(() => {
+                    isSaving = false;
+                    statusEl.innerText = "☁️ Sincronizado";
+                    statusEl.className = "status-sync";
+                })
+                .catch(() => {
+                    statusEl.innerText = "⚠️ Erro de Conexão";
+                    statusEl.className = "status-wait";
+                });
+            
             updateUI();
         }
 
@@ -338,31 +318,13 @@
         function doPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const obs = document.getElementById('obs-main').value;
-            doc.setFillColor(30, 30, 30); doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(255); doc.setFontSize(18); doc.text("BRASIL AO CUBO - SGC", 14, 20);
-            doc.setFontSize(9); doc.text(`Unidade: ${cur.exp} | OP: ${cur.op} | Projeto: ${cur.id}`, 14, 28);
-            const rows = [];
-            document.querySelectorAll('.check-row').forEach(r => {
-                const ck = r.querySelector('.c-in');
-                rows.push([r.querySelector('.c-posto').innerText, r.querySelector('.c-ativid').innerText, r.querySelector('.d-in')?.value || "-", ck ? (ck.checked ? "OK" : "PENDENTE") : ""]);
-            });
-            doc.autoTable({ startY: 40, head: [['Posto', 'Atividade', 'Data', 'Status']], body: rows, headStyles: { fillColor: [0, 183, 204] } });
-            const finalY = doc.lastAutoTable.finalY + 15;
-            doc.setTextColor(0); doc.setFontSize(12); doc.text("OBSERVAÇÕES:", 14, finalY);
-            doc.setFontSize(10);
-            const splitObs = doc.splitTextToSize(obs || "Sem observações adicionais.", 180);
-            doc.text(splitObs, 14, finalY + 8);
+            doc.text(`Relatorio de Producao - ${cur.exp}`, 14, 20);
             doc.save(`SGC_${cur.exp}.pdf`);
         }
 
         function doExcel() {
             const row = [cur.id, cur.exp, cur.op];
-            document.querySelectorAll('.check-row').forEach(r => {
-                if(r.querySelector('.d-in')) row.push(r.querySelector('.d-in').value);
-                if(r.querySelector('.c-in')) row.push(r.querySelector('.c-in').checked);
-            });
-            row.push(document.getElementById('obs-main').value);
+            document.querySelectorAll('.c-in').forEach(c => row.push(c.checked ? "OK" : "Pendente"));
             const ws = XLSX.utils.aoa_to_sheet([row]);
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "SGC");
             XLSX.writeFile(wb, `Export_${cur.exp}.xlsx`);
