@@ -21,7 +21,6 @@
         .screen.active { display: flex; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Status de Sincronização */
         #sync-status {
             position: sticky; top: 0; z-index: 1001; width: 100%;
             text-align: center; padding: 8px; font-weight: 700; font-size: 12px;
@@ -214,15 +213,15 @@
         ];
 
         const tP = [
-            {p:"CORTE - SL 01", a:"DATA INÍCIO", d:1}, {p:"CORTE - SL 01", a:"DATA FIM", d:1}, {p:"CORTE - SL 01", a:"CONCLUÍDO", c:1},
+            {p:"CORTESL 01", a:"DATA INÍCIO", d:1}, {p:"CORTESL 01", a:"DATA FIM", d:1}, {p:"CORTESL 01", a:"CONCLUÍDO", c:1},
             {p:"SL 02", a:"MONTAGEM DOS QUADROS DE METALON", c:1}, {p:"SL 03", a:"EMPLACAMENTO DOS QUADROS DE METALON", c:1}, {p:"SL 05", a:"CORTE DE PLACAS", c:1},
-            {p:"VOL- SL 07", a:"DATA INÍCIO", d:1}, {p:"VOL- SL 07", a:"DATA FIM", d:1}, {p:"VOL- SL 07", a:"CONCLUÍDO", c:1},
-            {p:"SL 08 - DIA 1", a:"INST. ELÉTRICA", c:1}, {p:"SL 08 - DIA 1", a:"INST. HIDRÁULICA", c:1}, {p:"SL 08 - DIA 1", a:"PREPARAÇÃO", c:1},
-            {p:"SL 08 - DIA 2", a:"APLICAÇÃO D11", c:1}, {p:"SL 08 - DIA 2", a:"APLICAÇÃO DF-9", c:1}, {p:"SL 08 - DIA 2", a:"LÃ DE PET", c:1},
-            {p:"SL 08 - DIA 3", a:"CERÂMICA PISO", c:1}, {p:"SL 08 - DIA 3", a:"CERÂMICA PAREDE", c:1}, {p:"SL 08 - DIA 4", a:"CERÂMICA PAREDE", c:1},
-            {p:"SL 08 - DIA 5", a:"FORRO PVC", c:1}, {p:"SL 08 - DIA 5", a:"REJUNTE", c:1}, {p:"SL 08 - DIA 6", a:"LIMPEZA", c:1},
-            {p:"SL 08 - DIA 6", a:"ACAB. ELÉTRICO", c:1}, {p:"SL 08 - DIA 6", a:"LOUÇAS", c:1}, {p:"SL 08 - DIA 6", a:"PORTA", c:1},
-            {p:"SL 08 - DIA 7", a:"PORTINHOLA", c:1}, {p:"SL 08 - DIA 7", a:"VISTAS", c:1}, {p:"SL 08 - DIA 7", a:"NICHO", c:1}, {p:"SL 08 - DIA 7", a:"SILICONE", c:1}
+            {p:"VOL-SL 07", a:"DATA INÍCIO", d:1}, {p:"VOL-SL 07", a:"DATA FIM", d:1}, {p:"VOL-SL 07", a:"CONCLUÍDO", c:1},
+            {p:"SL 08-DIA 1", a:"INST. ELÉTRICA", c:1}, {p:"SL 08-DIA 1", a:"INST. HIDRÁULICA + TESTE DE ESTANQUEIDADE", c:1}, {p:"SL 08-DIA 1", a:"PREPARAÇÃO DA SUPERFICIE", c:1},
+            {p:"SL 08 - DIA 2", a:"APLICAÇÃO D11", c:1}, {p:"SL 08-DIA 2", a:"APLICAÇÃO DF-9", c:1}, {p:"SL 08-DIA 2", a:"LÃ DE PET", c:1},
+            {p:"SL 08-DIA 3", a:"CERÂMICA PISO", c:1}, {p:"SL 08-DIA 3", a:"CERÂMICA PAREDE", c:1}, {p:"SL 08-DIA 4", a:"CERÂMICA PAREDE", c:1},
+            {p:"SL 08-DIA 5", a:"INSTALAÇÃO DO FORRO PVC", c:1}, {p:"SL 08-DIA 5", a:"REJUNTE", c:1}, {p:"SL 08-DIA 6", a:"LIMPEZA REJUNTE", c:1},
+            {p:"SL 08-DIA 6", a:"INST. ACABAMENTO ELÉTRICO", c:1}, {p:"SL 08 - DIA 6", a:"INST. LOUÇAS E METAIS", c:1}, {p:"SL 08 - DIA 6", a:"INST. PORTA DE MADEIRA", c:1},
+            {p:"SL 08-DIA 7", a:"INST. PORTINHOLA", c:1}, {p:"SL 08-DIA 7", a:"INST. VISTAS INTERNAS", c:1}, {p:"SL 08 - DIA 7", a:"INST. NICHO", c:1}, {p:"SL 08-DIA 7", a:"ACABAMENTO EM SILICONE", c:1}
         ];
 
         function show(id) {
@@ -346,25 +345,35 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Header
-            doc.setFontSize(16);
-            doc.text("Relatório de Conferência", 14, 20);
+            // Faixa Preta no Topo (Cabeçalho Estilo SGC)
+            doc.setFillColor(26, 28, 30); // var(--dark)
+            doc.rect(0, 0, 210, 25, 'F');
             
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text("BRASIL AO CUBO - SGC", 14, 16);
+            
+            // Sub-cabeçalho de Informações
+            doc.setTextColor(40, 40, 40);
             doc.setFontSize(10);
+            
+            // Linha 1: Unidade e OP
             doc.setFont(undefined, 'bold');
-            doc.text("UNIDADE:", 14, 30);
+            doc.text("Unidade:", 14, 35);
             doc.setFont(undefined, 'normal');
-            doc.text(`${cur.type} - ${cur.exp}`, 40, 30);
+            doc.text(`${cur.exp}`, 32, 35);
             
             doc.setFont(undefined, 'bold');
-            doc.text("PROJETO:", 14, 35);
+            doc.text("| OP:", 65, 35);
             doc.setFont(undefined, 'normal');
-            doc.text(`${cur.id}`, 40, 35);
+            doc.text(`${cur.op}`, 75, 35);
 
+            // Linha 2: Projeto
             doc.setFont(undefined, 'bold');
-            doc.text("OP:", 14, 40);
+            doc.text("| Projeto:", 100, 35);
             doc.setFont(undefined, 'normal');
-            doc.text(`${cur.op}`, 40, 40);
+            doc.text(`${cur.id}`, 118, 35);
 
             const rows = [];
             document.querySelectorAll('.check-row').forEach(r => {
@@ -372,33 +381,38 @@
                 rows.push([
                     r.querySelector('.c-posto').innerText, 
                     r.querySelector('.c-ativid').innerText, 
-                    r.querySelector('.d-in')?.value || "-", 
-                    ck ? (ck.checked ? "OK" : "PENDENTE") : ""
+                    r.querySelector('.d-in')?.value || "", 
+                    ck ? (ck.checked ? "OK" : "") : ""
                 ]);
             });
 
             doc.autoTable({ 
-                startY: 50,
+                startY: 45,
                 head: [['Posto', 'Atividade', 'Data', 'Status']], 
                 body: rows,
-                theme: 'striped',
-                headStyles: { fillGray: 200, textColor: 20 }
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' },
+                columnStyles: {
+                    0: { cellWidth: 40 },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 25, halign: 'center' },
+                    3: { cellWidth: 20, halign: 'center' }
+                }
             });
 
-            // Observações
             const finalY = doc.lastAutoTable.finalY || 50;
-            const obs = document.getElementById('obs-main').value || "Nenhuma observação registrada.";
-            
-            doc.setFontSize(11);
-            doc.setFont(undefined, 'bold');
-            doc.text("OBSERVAÇÕES:", 14, finalY + 15);
+            const obs = document.getElementById('obs-main').value || "Nenhuma pendência, já carregado.";
             
             doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text("OBSERVAÇÕES:", 14, finalY + 12);
+            
             doc.setFont(undefined, 'normal');
             const splitObs = doc.splitTextToSize(obs, 180);
-            doc.text(splitObs, 14, finalY + 22);
+            doc.text(splitObs, 14, finalY + 18);
 
-            doc.save(`Relatorio_${cur.exp}.pdf`);
+            doc.save(`SGC_${cur.exp}.pdf`);
         }
 
         function doExcel() {
