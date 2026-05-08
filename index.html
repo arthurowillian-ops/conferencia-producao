@@ -343,14 +343,62 @@
         };
 
         function doPDF() {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(16);
+            doc.text("Relatório de Conferência", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text("UNIDADE:", 14, 30);
+            doc.setFont(undefined, 'normal');
+            doc.text(`${cur.type} - ${cur.exp}`, 40, 30);
+            
+            doc.setFont(undefined, 'bold');
+            doc.text("PROJETO:", 14, 35);
+            doc.setFont(undefined, 'normal');
+            doc.text(`${cur.id}`, 40, 35);
+
+            doc.setFont(undefined, 'bold');
+            doc.text("OP:", 14, 40);
+            doc.setFont(undefined, 'normal');
+            doc.text(`${cur.op}`, 40, 40);
+
             const rows = [];
             document.querySelectorAll('.check-row').forEach(r => {
                 const ck = r.querySelector('.c-in');
-                rows.push([r.querySelector('.c-posto').innerText, r.querySelector('.c-ativid').innerText, r.querySelector('.d-in')?.value || "-", ck ? (ck.checked ? "OK" : "PENDENTE") : ""]);
+                rows.push([
+                    r.querySelector('.c-posto').innerText, 
+                    r.querySelector('.c-ativid').innerText, 
+                    r.querySelector('.d-in')?.value || "-", 
+                    ck ? (ck.checked ? "OK" : "PENDENTE") : ""
+                ]);
             });
-            doc.autoTable({ head: [['Posto', 'Atividade', 'Data', 'Status']], body: rows });
-            doc.save(`SGC_${cur.exp}.pdf`);
+
+            doc.autoTable({ 
+                startY: 50,
+                head: [['Posto', 'Atividade', 'Data', 'Status']], 
+                body: rows,
+                theme: 'striped',
+                headStyles: { fillGray: 200, textColor: 20 }
+            });
+
+            // Observações
+            const finalY = doc.lastAutoTable.finalY || 50;
+            const obs = document.getElementById('obs-main').value || "Nenhuma observação registrada.";
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.text("OBSERVAÇÕES:", 14, finalY + 15);
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            const splitObs = doc.splitTextToSize(obs, 180);
+            doc.text(splitObs, 14, finalY + 22);
+
+            doc.save(`Relatorio_${cur.exp}.pdf`);
         }
 
         function doExcel() {
