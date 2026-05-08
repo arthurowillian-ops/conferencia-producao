@@ -1,6 +1,3 @@
-Aqui está o código completo. Fiz a alteração específica na função `doExcel` para que os dados sejam exportados em uma única linha, convertendo os valores de checkbox para o texto **"VERDADEIRO"** ou **"FALSO"**, exatamente como você solicitou, mantendo toda a estrutura anterior intacta.
-
-```html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -157,7 +154,6 @@ Aqui está o código completo. Fiz a alteração específica na função `doExce
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let isSaving = false;
         let cur = {};
 
         const dbM = [
@@ -299,14 +295,10 @@ Aqui está o código completo. Fiz a alteração específica na função `doExce
         function updateUIFields(saved) {
             if(saved.obs !== undefined) document.getElementById('obs-main').value = saved.obs;
             document.querySelectorAll('.d-in').forEach(el => {
-                if(saved['d_'+el.dataset.idx] !== undefined) {
-                    el.value = saved['d_'+el.dataset.idx];
-                }
+                if(saved['d_'+el.dataset.idx] !== undefined) el.value = saved['d_'+el.dataset.idx];
             });
             document.querySelectorAll('.c-in').forEach(el => {
-                if(saved['c_'+el.dataset.idx] !== undefined) {
-                    el.checked = saved['c_'+el.dataset.idx];
-                }
+                if(saved['c_'+el.dataset.idx] !== undefined) el.checked = saved['c_'+el.dataset.idx];
             });
             updateUI();
         }
@@ -331,7 +323,6 @@ Aqui está o código completo. Fiz a alteração específica na função `doExce
 
         function setSyncStatus(isSynced) {
             const el = document.getElementById('sync-status');
-            isSaving = !isSynced;
             if(isSynced) {
                 el.innerText = "☁️ Sincronizado";
                 el.className = "status-sync";
@@ -396,17 +387,11 @@ Aqui está o código completo. Fiz a alteração específica na função `doExce
             doc.save(`SGC_${cur.exp}.pdf`);
         }
 
-        // --- FUNÇÃO ALTERADA PARA EXPORTAÇÃO EM LINHA COM VERDADEIRO/FALSO ---
         function doExcel() {
-            // Cabeçalho básico (ID, EXPRESS, OP)
             let rowData = [cur.id, cur.exp, cur.op];
-            
-            // Coleta todas as linhas de conferência da tela
             document.querySelectorAll('.check-row').forEach(r => {
                 const dateInput = r.querySelector('.c-input input[type="date"]');
                 const checkInput = r.querySelector('.c-input input[type="checkbox"]');
-                
-                // Se existir input de data, pega o valor formatado (DD/MM/YYYY) ou vazio
                 if (dateInput) {
                     let val = dateInput.value;
                     if(val) {
@@ -416,14 +401,10 @@ Aqui está o código completo. Fiz a alteração específica na função `doExce
                         rowData.push("");
                     }
                 }
-                
-                // Se existir input de checkbox, converte para VERDADEIRO ou FALSO
                 if (checkInput) {
                     rowData.push(checkInput.checked ? "VERDADEIRO" : "FALSO");
                 }
             });
-
-            // Cria o arquivo Excel em uma linha só (data final vira uma linha na matriz)
             const ws = XLSX.utils.aoa_to_sheet([rowData]);
             const wb = XLSX.utils.book_new(); 
             XLSX.utils.book_append_sheet(wb, ws, "SGC_Export");
