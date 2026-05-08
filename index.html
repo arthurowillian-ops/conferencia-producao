@@ -1,3 +1,6 @@
+Aqui está o código completo. Fiz a alteração específica na função `doExcel` para que os dados sejam exportados em uma única linha, convertendo os valores de checkbox para o texto **"VERDADEIRO"** ou **"FALSO"**, exatamente como você solicitou, mantendo toda a estrutura anterior intacta.
+
+```html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -272,7 +275,6 @@
             cur = { id, exp, op, type, path: type + "_" + exp.replace(/\./g, '_') };
             document.getElementById('info-header').innerHTML = `<div>PROJETO<br><b>${id}</b></div><div>EXPRESS<br><b>${exp}</b></div><div>OP<br><b>${op}</b></div>`;
             
-            // Realtime: Remove escutas anteriores e ativa nova
             db.ref('conferencias/' + cur.path).off();
             db.ref('conferencias/' + cur.path).on('value', (snapshot) => {
                 const saved = snapshot.val() || {};
@@ -297,10 +299,14 @@
         function updateUIFields(saved) {
             if(saved.obs !== undefined) document.getElementById('obs-main').value = saved.obs;
             document.querySelectorAll('.d-in').forEach(el => {
-                if(saved['d_'+el.dataset.idx] !== undefined) el.value = saved['d_'+el.dataset.idx];
+                if(saved['d_'+el.dataset.idx] !== undefined) {
+                    el.value = saved['d_'+el.dataset.idx];
+                }
             });
             document.querySelectorAll('.c-in').forEach(el => {
-                if(saved['c_'+el.dataset.idx] !== undefined) el.checked = saved['c_'+el.dataset.idx];
+                if(saved['c_'+el.dataset.idx] !== undefined) {
+                    el.checked = saved['c_'+el.dataset.idx];
+                }
             });
             updateUI();
         }
@@ -313,12 +319,10 @@
             update[fieldKey] = value;
             update['lastUpdate'] = Date.now();
 
-            // Salva Local
             const local = JSON.parse(localStorage.getItem(cur.path)) || {};
             local[fieldKey] = value;
             localStorage.setItem(cur.path, JSON.stringify(local));
 
-            // Salva Firebase Granular
             db.ref('conferencias/' + cur.path).update(update).then(() => {
                 setSyncStatus(true);
             });
@@ -392,17 +396,38 @@
             doc.save(`SGC_${cur.exp}.pdf`);
         }
 
+        // --- FUNÇÃO ALTERADA PARA EXPORTAÇÃO EM LINHA COM VERDADEIRO/FALSO ---
         function doExcel() {
-            const data = [[cur.id, cur.exp, cur.op]];
+            // Cabeçalho básico (ID, EXPRESS, OP)
+            let rowData = [cur.id, cur.exp, cur.op];
+            
+            // Coleta todas as linhas de conferência da tela
             document.querySelectorAll('.check-row').forEach(r => {
-                const d = r.querySelector('.d-in')?.value || "";
-                const c = r.querySelector('.c-in')?.checked || false;
-                data[0].push(d, c);
+                const dateInput = r.querySelector('.c-input input[type="date"]');
+                const checkInput = r.querySelector('.c-input input[type="checkbox"]');
+                
+                // Se existir input de data, pega o valor formatado (DD/MM/YYYY) ou vazio
+                if (dateInput) {
+                    let val = dateInput.value;
+                    if(val) {
+                        const [y, m, d] = val.split('-');
+                        rowData.push(`${d}/${m}/${y}`);
+                    } else {
+                        rowData.push("");
+                    }
+                }
+                
+                // Se existir input de checkbox, converte para VERDADEIRO ou FALSO
+                if (checkInput) {
+                    rowData.push(checkInput.checked ? "VERDADEIRO" : "FALSO");
+                }
             });
-            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Cria o arquivo Excel em uma linha só (data final vira uma linha na matriz)
+            const ws = XLSX.utils.aoa_to_sheet([rowData]);
             const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, "SGC");
-            XLSX.writeFile(wb, `Export_${cur.exp}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "SGC_Export");
+            XLSX.writeFile(wb, `SGC_${cur.exp}_Dados.xlsx`);
         }
     </script>
 </body>
