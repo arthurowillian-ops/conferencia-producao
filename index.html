@@ -29,7 +29,7 @@
         .status-sync { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .status-saving { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
-        .card-auth { background: var(--white); padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 400px; margin-top: 5vh; border: 1px solid #eee; }
+        .card-auth { background: var(--white); padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 400px; margin-top: 15vh; border: 1px solid #eee; }
         .logo-login { height: 80px; margin-bottom: 20px; }
         
         .grid-selection { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 700px; margin-top: 20px; }
@@ -82,7 +82,7 @@
     <div id="scr-login" class="screen active">
         <div class="card-auth">
             <img src="https://i.postimg.cc/sfJg4Ykr/br3-imagem.png" class="logo-login">
-            <div class="title-login">Sistema de Conferência</div>
+            <div style="margin-bottom: 20px; color: #666; font-size: 14px;">Sistema de Conferência</div>
             <button style="width:100%; padding: 18px;" onclick="show('scr-start')">ENTRAR</button>
         </div>
     </div>
@@ -145,6 +145,7 @@
     </div>
 
     <script>
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCuI-JSXWNzLCscFowXYZVRHsSN95Z_LEU",
             authDomain: "sistema-conferencia-24505.firebaseapp.com",
@@ -156,6 +157,7 @@
 
         let cur = {};
 
+        // BANCO DE DADOS DE UNIDADES
         const dbM = [
             ["7.00.SGC0018","EXPRESS 291","006307"], ["7.00.0000015","EXPRESS 292","006306"],
             ["7.00.SGC0017","EXPRESS 293","006308"], ["7.00.0000014","EXPRESS 294","006309"],
@@ -186,6 +188,7 @@
             ["7.00.0000016","EXPRESS 319","007325"], ["7.00.0000013","EXPRESS 321","007326"]
         ];
 
+        // TASKS MODULOS
         const tM = [
             {p:"CORTE DOS PILARES - SL 01", a:"INICIO", d:1}, {p:"CORTE DOS PILARES - SL 01", a:"FIM", d:1}, {p:"CORTE DOS PILARES - SL 01", a:"CONCLUÍDO", c:1},
             {p:"CORTE DOS MÓDULOS - SL 01", a:"INICIO", d:1}, {p:"CORTE DOS MÓDULOS - SL 01", a:"FIM", d:1}, {p:"CORTE DOS MÓDULOS - SL 01", a:"CONCLUÍDO", c:1},
@@ -211,6 +214,7 @@
             {p:"LP 10", a:"FINALIZAÇÃO (DATA)", d:1, t:'lp'}, {p:"LP 10", a:"DATA CARREGAMENTO", d:1, t:'lp'}
         ];
 
+        // TASKS PODS
         const tP = [
             {p:"CORTESL 01", a:"DATA INÍCIO", d:1}, {p:"CORTESL 01", a:"DATA FIM", d:1}, {p:"CORTESL 01", a:"CONCLUÍDO", c:1},
             {p:"SL 02", a:"MONTAGEM DOS QUADROS DE METALON", c:1}, {p:"SL 03", a:"EMPLACAMENTO DOS QUADROS DE METALON", c:1}, {p:"SL 05", a:"CORTE DE PLACAS", c:1},
@@ -223,12 +227,14 @@
             {p:"SL 08-DIA 7", a:"INST. PORTINHOLA", c:1}, {p:"SL 08-DIA 7", a:"INST. VISTAS INTERNAS", c:1}, {p:"SL 08 - DIA 7", a:"INST. NICHO", c:1}, {p:"SL 08-DIA 7", a:"ACABAMENTO EM SILICONE", c:1}
         ];
 
+        // FUNÇÃO NAVEGAÇÃO
         function show(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             window.scrollTo(0,0);
         }
 
+        // CARREGAR LISTA DE UNIDADES
         async function loadList(type) {
             const body = document.getElementById('body-units');
             body.innerHTML = "<tr><td colspan='5' style='text-align:center'>Sincronizando dados...</td></tr>";
@@ -267,6 +273,7 @@
             show('scr-list');
         }
 
+        // ABRIR CHECKLIST
         async function openCheck(id, exp, op, type) {
             cur = { id, exp, op, type, path: type + "_" + exp.replace(/\./g, '_') };
             document.getElementById('info-header').innerHTML = `<div>PROJETO<br><b>${id}</b></div><div>EXPRESS<br><b>${exp}</b></div><div>OP<br><b>${op}</b></div>`;
@@ -336,8 +343,10 @@
             const t = document.querySelectorAll('.c-in').length;
             const d = document.querySelectorAll('.c-in:checked').length;
             const p = Math.round((d/t)*100) || 0;
-            document.getElementById('bar-fill').style.width = p + "%";
-            document.getElementById('pct-txt').innerText = p + "%";
+            const bar = document.getElementById('bar-fill');
+            if(bar) bar.style.width = p + "%";
+            const txt = document.getElementById('pct-txt');
+            if(txt) txt.innerText = p + "%";
         }
 
         function exitCheck() {
@@ -387,6 +396,7 @@
             doc.save(`SGC_${cur.exp}.pdf`);
         }
 
+        // FUNÇÃO EXCEL EM LINHA (DATA, VERDADEIRO, FALSO)
         function doExcel() {
             let rowData = [cur.id, cur.exp, cur.op];
             document.querySelectorAll('.check-row').forEach(r => {
