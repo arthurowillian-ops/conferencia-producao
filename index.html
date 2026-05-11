@@ -49,6 +49,19 @@
         .status-cell { font-size: 11px; color: #666; line-height: 1.2; }
         .pct-badge { background: #e0f7fa; color: #00838f; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-right: 5px; }
 
+        /* Estilo da Bolinha de Status */
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .dot-red { background-color: #ff4d4d; }
+        .dot-yellow { background-color: #ffcc00; }
+        .dot-green { background-color: #28a745; }
+
         .check-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .check-row { 
             display: grid; grid-template-columns: 1fr 120px 50px; 
@@ -108,7 +121,10 @@
         <div class="container">
             <div class="header-app">
                 <h3 id="list-title" style="margin:0;">Unidades</h3>
-                <button onclick="show('scr-start')">Voltar</button>
+                <div style="display: flex; gap: 10px;">
+                    <button style="background:#217346" onclick="doExcelAll()">Excel</button>
+                    <button onclick="show('scr-start')">Voltar</button>
+                </div>
             </div>
             <div class="table-card">
                 <table>
@@ -156,6 +172,7 @@
         const db = firebase.database();
 
         let cur = {};
+        let currentListType = '';
 
         // BANCO DE DADOS DE UNIDADES
         const dbM = [
@@ -236,6 +253,7 @@
 
         // CARREGAR LISTA DE UNIDADES
         async function loadList(type) {
+            currentListType = type;
             const body = document.getElementById('body-units');
             body.innerHTML = "<tr><td colspan='5' style='text-align:center'>Sincronizando dados...</td></tr>";
             const data = (type === 'MODULO') ? dbM : dbP;
@@ -262,8 +280,17 @@
                 });
                 const p = Math.round((done/total)*100) || 0;
 
+                let dotClass = 'dot-red';
+                const loadDateKey = type === 'MODULO' ? 'd_63' : 'd_999'; 
+                
+                if (saved[loadDateKey]) {
+                    dotClass = 'dot-green';
+                } else if (p === 100) {
+                    dotClass = 'dot-yellow';
+                }
+
                 body.innerHTML += `<tr>
-                    <td><b>${u[0]}</b></td>
+                    <td><span class="status-dot ${dotClass}"></span><b>${u[0]}</b></td>
                     <td>${u[1]}</td>
                     <td>${u[2]}</td>
                     <td class="status-cell"><span class="pct-badge">${p}%</span><br><small>${lastTask}</small></td>
@@ -273,7 +300,6 @@
             show('scr-list');
         }
 
-        // ABRIR CHECKLIST
         async function openCheck(id, exp, op, type) {
             cur = { id, exp, op, type, path: type + "_" + exp.replace(/\./g, '_') };
             document.getElementById('info-header').innerHTML = `<div>PROJETO<br><b>${id}</b></div><div>EXPRESS<br><b>${exp}</b></div><div>OP<br><b>${op}</b></div>`;
@@ -396,7 +422,6 @@
             doc.save(`SGC_${cur.exp}.pdf`);
         }
 
-        // FUNÇÃO EXCEL EM LINHA (DATA, VERDADEIRO, FALSO)
         function doExcel() {
             let rowData = [cur.id, cur.exp, cur.op];
             document.querySelectorAll('.check-row').forEach(r => {
@@ -407,18 +432,52 @@
                     if(val) {
                         const [y, m, d] = val.split('-');
                         rowData.push(`${d}/${m}/${y}`);
-                    } else {
-                        rowData.push("");
-                    }
+                    } else { rowData.push(""); }
                 }
-                if (checkInput) {
-                    rowData.push(checkInput.checked ? "VERDADEIRO" : "FALSO");
+                if (checkInput) { 
+                    rowData.push(checkInput.checked ? "=VERDADEIRO" : "=FALSO"); 
                 }
             });
             const ws = XLSX.utils.aoa_to_sheet([rowData]);
             const wb = XLSX.utils.book_new(); 
             XLSX.utils.book_append_sheet(wb, ws, "SGC_Export");
             XLSX.writeFile(wb, `SGC_${cur.exp}_Dados.xlsx`);
+        }
+
+        async function doExcelAll() {
+            const type = currentListType;
+            const data = (type === 'MODULO') ? dbM : dbP;
+            const tasks = (type === 'MODULO') ? tM : tP;
+            
+            const snapshot = await db.ref('conferencias').once('value');
+            const allSaved = snapshot.val() || {};
+            
+            let fullMatrix = [];
+
+            data.forEach(u => {
+                let rowData = [u[0], u[1], u[2]];
+                const path = type + "_" + u[1].replace(/\./g, '_');
+                const saved = allSaved[path] || JSON.parse(localStorage.getItem(path)) || {};
+
+                tasks.forEach((t, i) => {
+                    if (t.d) {
+                        let val = saved['d_'+i];
+                        if(val) {
+                            const [y, m, d] = val.split('-');
+                            rowData.push(`${d}/${m}/${y}`);
+                        } else { rowData.push(""); }
+                    }
+                    if (t.c) {
+                        rowData.push(saved['c_'+i] ? "=VERDADEIRO" : "=FALSO");
+                    }
+                });
+                fullMatrix.push(rowData);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(fullMatrix);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "SGC_Geral");
+            XLSX.writeFile(wb, `SGC_Geral_${type}.xlsx`);
         }
     </script>
 </body>
